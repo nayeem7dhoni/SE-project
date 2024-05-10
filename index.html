@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy-Preserving Analytics with Encryption and Decryption</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 50px;
+  color: #333;
+}
+
+#dataForm {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+#result {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+</style>
+</head>
+<body>
+<h1>Privacy-Preserving Analytics with Encryption and Decryption</h1>
+
+<form id="dataForm">
+  <label for="dataInput">Enter Your Data:</label>
+  <input type="text" id="dataInput" name="dataInput">
+  <button type="submit">Encrypt & Submit</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+document.getElementById("dataForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+  var inputData = document.getElementById("dataInput").value;
+
+  // Encrypt email addresses, 10-digit numbers, and text following "personal" or "password"
+  var encryptedData = encryptSensitiveData(inputData);
+  console.log("Encrypted Data:", encryptedData);
+
+  // Send encrypted data to server for further processing
+  sendDataToServer(encryptedData);
+});
+
+function encryptSensitiveData(data) {
+  // Define regular expressions for identifying email addresses, 10-digit numbers, and sensitive text
+  var emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
+  var numberRegex = /\b\d{10}\b/g;
+  var sensitiveRegex = /\b(?:personal|password)\s*(.?)\.\s/gi;
+
+  // Replace each email address, 10-digit number, and sensitive text with encrypted text
+  var encryptedData = data.replace(emailRegex, function(match) {
+    return encryptWord(match);
+  }).replace(numberRegex, function(match) {
+    return encryptWord(match);
+  }).replace(sensitiveRegex, function(match, group) {
+    return match.replace(group, encryptWord(group.trim()));
+  });
+
+  return encryptedData;
+}
+
+function encryptWord(word) {
+  // Simulate encryption by adding a fixed value to each character's ASCII code
+  var encryptedChars = [];
+  for (var i = 0; i < word.length; i++) {
+    encryptedChars.push(word.charCodeAt(i) + 1); // Add 1 to each character's ASCII code
+  }
+  return encryptedChars.join(",");
+}
+
+function sendDataToServer(data) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/store-data", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        document.getElementById("result").innerText = "Data stored successfully";
+      } else {
+        document.getElementById("result").innerText = "Error storing data";
+      }
+    }
+  };
+  xhr.send(JSON.stringify({ encryptedData: data }));
+  var resultElement = document.getElementById("result");
+  resultElement.innerText = "Encrypted Data: " + data;
+}
+</script>
+</body>
+</html>
